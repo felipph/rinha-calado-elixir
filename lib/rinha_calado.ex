@@ -13,10 +13,14 @@ defmodule RinhaCalado do
 
 
   get "/pessoas/:id" do
-    data = Cache.get(:id);
-    Logger.info  data
-    # data = %{status: "OK"}
-    send_resp(conn, 200, "ok")
+    data = Cache.get(id)
+    {status, data} = case data do
+
+      %{} -> { 200, data}
+      _   -> { 404, %{error: "Not found!"}}
+    end
+
+    send_resp(conn, status, Poison.encode!(data))
   end
 
   get "/pessoas/?t=:search" do
@@ -31,7 +35,22 @@ defmodule RinhaCalado do
 
     {status, body} =
       case conn.body_params do
-        %{"nome" => _, "idade" => _} -> {200, processar_registro(conn.body_params)}
+
+        %{
+          "apelido"    => _, 	    # obrigatório, único, string de até 32 caracteres.
+          "nome"       => _,      # obrigatório, string de até 100 caracteres.
+          "nascimento" => _,	    # obrigatório, string para data no formato AAAA-MM-DD (ano, mês, dia).
+          "stack"      => [_ | _] # opcional, vetor de string com cada elemento sendo obrigatório e de até 32 caracteres.}
+        } -> {200, processar_registro(conn.body_params)}
+
+
+        %{
+          "apelido"    => _, 	 # obrigatório, único, string de até 32 caracteres.
+          "nome"       => _,   # obrigatório, string de até 100 caracteres.
+          "nascimento" => _,	 # obrigatório, string para data no formato AAAA-MM-DD (ano, mês, dia).
+          "stack"      => []   # opcional, vetor de string com cada elemento sendo obrigatório e de até 32 caracteres.}
+        } -> {200, processar_registro(conn.body_params)}
+
         _ -> {422, Poison.encode!(%{error: "Invalid request"})}
 
       end
@@ -44,8 +63,8 @@ defmodule RinhaCalado do
 
   def processar_registro(body) do
     itemId = UUID.uuid4();
-    body = Map.put(body, :id, itemId);
-    Cache.put(:itemId, body)
+    body = %{body | "id" => itemId};
+    Cache.put(itemId, body)
     Poison.encode!(%{response: "Salvo!", data: body})
   end
 end
