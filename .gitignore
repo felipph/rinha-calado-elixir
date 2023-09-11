@@ -24,3 +24,4 @@ rinha_calado-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+/docker/postgres-data/

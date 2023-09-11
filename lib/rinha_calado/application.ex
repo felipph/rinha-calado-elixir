@@ -8,16 +8,26 @@ defmodule RinhaCalado.Application do
   @impl true
   def start(_type, _args) do
 
+    db_config = [
+      name: :postgresql,
+      hostname: "127.0.0.1",
+      database: "postgres",
+      username: "postgres",
+      password: "postgres",
+      pool_size: 10
+    ]
+
     topologies = Application.get_env(:libcluster, :topologies, [])
 
     children = [
       {Cluster.Supervisor, [topologies, [name: RinhaCalado.ClusterSupervisor]]},
       {RinhaCalado.Cache, []},
-      {Plug.Cowboy, scheme: :http, plug: RinhaCalado, options: [port: cowboy_port()]}
-
+      {RinhaCalado.PersistCache, []},
+      {Plug.Cowboy, scheme: :http, plug: RinhaCalado, options: [port: cowboy_port()]},
+      {Postgrex, db_config}
     ]
 
-    opts = [strategy: :one_for_one, name: RinhaCalado.Supervisor]
+    opts = [strategy: :one_for_one, name: __MODULE__ ]
     Supervisor.start_link(children, opts)
   end
 

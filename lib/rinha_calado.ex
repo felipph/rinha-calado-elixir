@@ -63,7 +63,7 @@ defmodule RinhaCalado do
 
   def processar_registro(body) do
     itemId = UUID.uuid4();
-    body = %{body | "id" => itemId};
+    body = Map.put(body, "id", itemId);
     Cache.put(itemId, body)
     Poison.encode!(%{response: "Salvo!", data: body})
   end
