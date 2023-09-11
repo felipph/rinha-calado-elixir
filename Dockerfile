@@ -7,15 +7,21 @@ RUN mix local.hex --force && \
 # também funciona essa sintaxe:
 # RUN mix do local.hex --force, local.rebar --force
 
+WORKDIR /app
+ENV APP_NAME=api01
 # copiar tudo da raiz do projeto para o contêiner docker
-COPY ./config ./config
-COPY ./lib ./lib
-COPY ./mix.exs ./mix.exs
-COPY ./mix.lock ./mix.lock
-COPY ./.formatter.exs ./.formatter.exs
+COPY ./config           /app/config
+COPY ./lib              /app/lib
+COPY ./mix.exs          /app/mix.exs
+COPY ./mix.lock         /app/mix.lock
+COPY ./.formatter.exs   /app/.formatter.exs
+
+
 
 # instalar as dependencias
-RUN mix do deps.get, deps.compile
+RUN cd /app && mix do deps.get, deps.compile
 
 # executar o servidor
-CMD ["iex", "mix", "-S", "run"]
+# CMD ["iex", "-S", "mix", "run"]
+
+ CMD ["sh", "-c", "elixir --sname ${APP_NAME} -S mix run --no-halt"]

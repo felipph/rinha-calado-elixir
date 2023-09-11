@@ -10,7 +10,7 @@ defmodule RinhaCalado.Application do
 
     db_config = [
       name: :postgresql,
-      hostname: "127.0.0.1",
+      hostname: "db",
       database: "postgres",
       username: "postgres",
       password: "postgres",
@@ -31,5 +31,5 @@ defmodule RinhaCalado.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp cowboy_port, do: Application.get_env(:rinha_calado, :cowboy_port, 8080)
+  defp cowboy_port, do: Application.get_env(:rinha_calado, :port, 80)
 end
